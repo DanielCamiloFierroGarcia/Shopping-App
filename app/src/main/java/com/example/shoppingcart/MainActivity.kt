@@ -32,18 +32,39 @@ class MainActivity : AppCompatActivity() {
                 }
                 R.id.menu_chats ->{
                     //chats item click, show chats fragment
-                    showChatsFragment()
-                    true
+                    if(firebaseAuth.currentUser == null){
+                        startActivity(Intent(this, LoginOptionsActivity::class.java))
+                        Utils.toast(this, "Login Required")
+                        false
+                    }
+                    else{
+                        showChatsFragment()
+                        true
+                    }
                 }
                 R.id.menu_my_ads ->{
                     //my ads item click, show my ads fragment
-                    showMyAdsFragment()
-                    true
+                    if(firebaseAuth.currentUser == null){
+                        startActivity(Intent(this, LoginOptionsActivity::class.java))//the startLoginOptions method is this
+                        Utils.toast(this, "Login Required")
+                        false
+                    }
+                    else{
+                        showMyAdsFragment()
+                        true
+                    }
                 }
                 R.id.menu_account ->{
                     //account item click, show account fragment
-                    showAccountFragment()
-                    true
+                    if(firebaseAuth.currentUser == null){
+                        startActivity(Intent(this, LoginOptionsActivity::class.java))
+                        Utils.toast(this, "Login Required")
+                        false
+                    }
+                    else{
+                        showAccountFragment()
+                        true
+                    }
                 }
                 else ->{
                     false

@@ -1,5 +1,6 @@
 package com.example.shoppingcart
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.example.shoppingcart.databinding.ActivityLoginOptionsBinding
@@ -15,5 +16,8 @@ class LoginOptionsActivity : AppCompatActivity() {
             onBackPressed()
         }
 
+        binding.loginEmailBtn.setOnClickListener {
+            startActivity(Intent(this, LoginEmailActivity::class.java))
+        }
     }
 }

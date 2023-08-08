@@ -59,7 +59,7 @@ class LoginEmailActivity : AppCompatActivity() {
             binding.emailEt.error = "Invalid Email format"
             binding.emailEt.requestFocus()
         }
-        else if(email.isEmpty()){
+        else if(password.isEmpty()){
             binding.passwordEt.error = "Please enter an password"
             binding.passwordEt.requestFocus()
         }

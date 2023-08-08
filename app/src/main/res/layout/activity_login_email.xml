@@ -119,7 +119,7 @@
             android:id="@+id/loginBtn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="register"
+            android:text="Login"
             app:cornerRadius="8dp"
             android:layout_alignParentBottom="true"
             android:minHeight="@dimen/m_button_height"/>
