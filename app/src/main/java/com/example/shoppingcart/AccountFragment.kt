@@ -50,6 +50,10 @@ class AccountFragment : Fragment() {
             startActivity(Intent(mContext, MainActivity::class.java))
             activity?.finishAffinity()
         }
+
+        binding.editProfileCv.setOnClickListener {
+            startActivity(Intent(mContext, ProfileEditActivity::class.java))
+        }
     }
 
     private fun loadMyInfo() {
