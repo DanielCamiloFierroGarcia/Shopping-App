@@ -1,5 +1,6 @@
 package com.example.shoppingcart
 
+import android.app.Activity
 import android.app.ProgressDialog
 import android.content.ContentValues
 import android.content.Intent
@@ -19,6 +20,7 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.storage.FirebaseStorage
 
 class ProfileEditActivity : AppCompatActivity() {
     private lateinit var binding: ActivityProfileEditBinding
@@ -53,6 +55,100 @@ class ProfileEditActivity : AppCompatActivity() {
         binding.profileImagePickFab.setOnClickListener {
             imagePickDialog()
         }
+
+        binding.updateBtn.setOnClickListener {
+            validateData()
+        }
+    }
+    private var name = ""
+    private var dob = ""
+    private var email = ""
+    private var phoneCode = ""
+    private var phoneNumber = ""
+    private fun validateData(){
+        name = binding.nameEt.text.toString().trim()
+        dob = binding.dobEt.text.toString().trim()
+        email = binding.emailEt.text.toString().trim()
+        phoneCode = binding.countryCodePicker.selectedCountryCodeWithPlus
+        phoneNumber = binding.phoneNumberEt.text.toString().trim()
+
+        if(imageUri == null){
+            updateProfileDb(null)
+        }
+        else{
+            uploadProfileImageStorage()
+        }
+    }
+
+    private fun updateProfileDb(uploadedImageUrl: String?) {
+        Log.d(TAG, "updateProfileDb: $uploadedImageUrl")
+        progressDialog.setMessage("Updating user info")
+        progressDialog.show()
+
+        val hashMap = HashMap<String, Any>()
+        hashMap["name"] = "$name"
+        hashMap["dob"] = "$dob"
+        if(uploadedImageUrl != null){
+            hashMap["profileImageUrl"] = "$uploadedImageUrl"
+        }
+        //if user type is Phone allow to update email addres (in the other cases allow to update phone
+        if(myUserType.equals("Phone", true)){
+            hashMap["email"] = "$email"
+        }
+        else if(myUserType.equals("Email", true) || myUserType.equals("Google", true)){
+            hashMap["phoneCode"] = "$phoneCode"
+            hashMap["phoneNumber"] = "$phoneNumber"
+        }
+
+        val ref = FirebaseDatabase.getInstance().getReference("Users")
+        ref.child("${firebaseAuth.uid}")
+            .updateChildren(hashMap)
+            .addOnSuccessListener {
+                Log.d(TAG, "updateProfileDb: Updated")
+                progressDialog.dismiss()
+                Utils.toast(this, "Updated")
+                imageUri = null
+            }
+            .addOnFailureListener {
+                Log.d(TAG, "updateProfileDb: ", it)
+                progressDialog.dismiss()
+                Utils.toast(this, "Failed due to ${it.message}")
+            }
+    }
+
+    private fun uploadProfileImageStorage() {
+        Log.d(TAG, "uploadProfileImageStorage: ")
+        progressDialog.setMessage("Uploading user profile image")
+        progressDialog.show()
+
+        val filePathAndNAme = "UserProfile/profile_${firebaseAuth.uid}"
+
+        val ref = FirebaseStorage.getInstance().reference.child(filePathAndNAme)
+        ref.putFile(imageUri!!)
+            .addOnProgressListener {snapshot ->
+                //check image upload progress ans show
+                val progress = 100.0*snapshot.bytesTransferred / snapshot.totalByteCount
+                Log.d(TAG, "uploadProfileImageStorage: progress: $progress")
+                progressDialog.setMessage("uploading profile image. Progress: $progress")
+            }
+            .addOnSuccessListener {taskSnapshot ->
+                Log.d(TAG, "uploadProfileImageStorage: Image uploaded")
+                val uriTask = taskSnapshot.storage.downloadUrl
+
+                while (!uriTask.isSuccessful);
+                
+                val uploadedImageUrl = uriTask.result.toString()
+                
+                if(uriTask.isSuccessful){
+                    updateProfileDb(uploadedImageUrl)
+                }
+
+            }
+            .addOnFailureListener{
+                Log.d(TAG, "uploadProfileImageStorage: ",it)
+                progressDialog.dismiss()
+                Utils.toast(this, "Failed to upload due to ${it.message}")
+            }
     }
 
     private fun loadMyInfo() {
@@ -112,7 +208,7 @@ class ProfileEditActivity : AppCompatActivity() {
         val popupMenu = PopupMenu(this, binding.profileImagePickFab)
 
         popupMenu.menu.add(Menu.NONE, 1, 1, "Camera")
-        popupMenu.menu.add(Menu.NONE, 1, 1, "Gallery")
+        popupMenu.menu.add(Menu.NONE, 2, 1, "Gallery")
 
         popupMenu.show()
 
@@ -178,11 +274,49 @@ class ProfileEditActivity : AppCompatActivity() {
 
         val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri)
+        cameraActivityResultLauncher.launch(intent)
+    }
+
+    private val cameraActivityResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()){result ->
+        if(result.resultCode == Activity.RESULT_OK){
+            Log.d(TAG, "cameraActivityResultLauncher: Image Captured: imageUri : $imageUri")
+
+            try{
+                Glide.with(this)
+                    .load(imageUri)
+                    .placeholder(R.drawable.ic_person_white)
+                    .into(binding.profileIv)
+            }catch (e: Exception){
+                Log.d(TAG, "cameraActivityResultLauncher: ", e)
+            }
+        }
+        else{
+            Utils.toast(this, "Cancelled")
+        }
     }
 
     private fun pickImageGallery() {
+        Log.d(TAG, "pickImageGallery: ")
 
+        val intent = Intent(Intent.ACTION_PICK)
+        intent.type = "image/*"
+        galleryActivityResultLauncher.launch(intent)
     }
 
-    //WE LEFT AT 1 HOUR
+    private val galleryActivityResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()){result ->
+        if(result.resultCode == Activity.RESULT_OK){
+            val data  = result.data
+
+            imageUri = data!!.data
+
+            try{
+                Glide.with(this)
+                    .load(imageUri)
+                    .placeholder(R.drawable.ic_person_white)
+                    .into(binding.profileIv)
+            }catch (e: java.lang.Exception){
+                Log.d(TAG, "galleryActivityResultLauncher: ", e)
+            }
+        }
+    }
 }

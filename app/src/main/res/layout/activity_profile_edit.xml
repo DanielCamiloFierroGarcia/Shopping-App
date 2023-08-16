@@ -168,13 +168,17 @@
                     app:boxCornerRadiusTopEnd="8dp"
                     app:boxCornerRadiusBottomStart="8dp"
                     app:boxCornerRadiusBottomEnd="8dp"
-                    app:startIconDrawable="@drawable/ic_call_white">
+                    app:startIconDrawable="@drawable/ic_call_white"
+                    android:clickable="true"
+                    android:focusable="true">
 
                     <EditText
                         android:id="@id/phoneNumberEt"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:inputType="phone"/>
+                        android:inputType="phone"
+                        android:clickable="true"
+                        android:focusable="true"/>
 
                 </com.google.android.material.textfield.TextInputLayout>
 
