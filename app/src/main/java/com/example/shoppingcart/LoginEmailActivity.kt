@@ -43,6 +43,10 @@ class LoginEmailActivity : AppCompatActivity() {
         binding.loginBtn.setOnClickListener {
             validateData()
         }
+
+        binding.forgotPasswordTv.setOnClickListener {
+            startActivity(Intent(this, ForgotPasswordActivity::class.java))
+        }
     }
 
     private fun validateData(){

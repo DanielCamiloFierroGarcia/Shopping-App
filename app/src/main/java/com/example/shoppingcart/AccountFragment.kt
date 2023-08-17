@@ -54,6 +54,10 @@ class AccountFragment : Fragment() {
         binding.editProfileCv.setOnClickListener {
             startActivity(Intent(mContext, ProfileEditActivity::class.java))
         }
+
+        binding.changePasswordCv.setOnClickListener {
+            startActivity(Intent(mContext, ChangePasswordActivity::class.java))
+        }
     }
 
     private fun loadMyInfo() {

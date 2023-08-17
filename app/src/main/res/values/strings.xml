@@ -4,4 +4,5 @@
     <string name="don_t_have_account_register">Don\'t have account? <b>Register</b></string>
     <string name="already_have_account_log_in">Already have account? <b>Log in</b></string>
     <string name="didnt_receive_otp_resend">Didnt receive OTP? <b>Resend</b></string>
+    <string name="forgot_password_recover">Forgot Password? <b>Recover</b></string>
 </resources>
