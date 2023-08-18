@@ -1,5 +1,6 @@
 package com.example.shoppingcart
 
+import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -28,6 +29,8 @@ class AccountFragment : Fragment() {
 
     private lateinit var firebaseAuth: FirebaseAuth
 
+    private lateinit var progressDialog: ProgressDialog
+
     override fun onAttach(context: Context) {
         mContext = context
         super.onAttach(context)
@@ -41,6 +44,11 @@ class AccountFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        progressDialog = ProgressDialog(mContext)
+        progressDialog.setTitle("Please wait")
+        progressDialog.setCanceledOnTouchOutside(false)
+
         firebaseAuth = FirebaseAuth.getInstance()
 
         loadMyInfo()
@@ -58,9 +66,18 @@ class AccountFragment : Fragment() {
         binding.changePasswordCv.setOnClickListener {
             startActivity(Intent(mContext, ChangePasswordActivity::class.java))
         }
+
+        binding.verifyAccountCv.setOnClickListener {
+            verifyAccount()
+        }
+
+        binding.deleteAccountCv.setOnClickListener {
+            startActivity(Intent(mContext, DeleteAccountActivity::class.java))
+        }
     }
 
     private fun loadMyInfo() {
+        //Log.d(TAG, "loadMyInfo eef3: ${firebaseAuth.currentUser!!.email} and ${firebaseAuth.currentUser!!.isEmailVerified}")
         val ref = FirebaseDatabase.getInstance().getReference("Users")
         ref.child("${firebaseAuth.uid}")
             .addValueEventListener(object : ValueEventListener{
@@ -72,7 +89,7 @@ class AccountFragment : Fragment() {
                     val phoneNumber = "${snapshot.child("phoneNumber").value}"
                     val profileImageUrl = "${snapshot.child("profileImageUrl").value}"
                     var timestamp = "${snapshot.child("timestamp").value}"
-                    val usertype = "${snapshot.child("usertype").value}"
+                    val usertype = "${snapshot.child("userType").value}"
 
                     val phone = phoneCode+phoneNumber
 
@@ -90,14 +107,18 @@ class AccountFragment : Fragment() {
 
                     if(usertype == "Email"){
                         val isVerified = firebaseAuth.currentUser!!.isEmailVerified
+                        Log.d(TAG, "onDataChange: aaaa $isVerified")
                         if(isVerified){
+                            binding.verifyAccountCv.visibility = View.GONE
                             binding.verificationTv.text = "Verified"
                         }
                         else{
+                            binding.verifyAccountCv.visibility = View.VISIBLE
                             binding.verificationTv.text = "Not Verified"
                         }
                     }
                     else{
+                        binding.verifyAccountCv.visibility = View.GONE
                         binding.verificationTv.text = "Verified"
                     }
 
@@ -115,5 +136,24 @@ class AccountFragment : Fragment() {
 
                 }
             })
+    }
+
+    private fun verifyAccount(){
+        Log.d(TAG, "verifyAccount: ")
+
+        progressDialog.setMessage("Sending account verification to email")
+        progressDialog.show()
+
+        firebaseAuth.currentUser!!.sendEmailVerification()
+            .addOnSuccessListener {
+                Log.d(TAG, "verifyAccount: Succesfully sent")
+                progressDialog.dismiss()
+                Utils.toast(mContext, "Verification sent to email")
+            }
+            .addOnFailureListener {
+                Log.d(TAG, "verifyAccount: ", it)
+                progressDialog.dismiss()
+                Utils.toast(mContext, "Failed to send due to ${it.message}")
+            }
     }
 }
