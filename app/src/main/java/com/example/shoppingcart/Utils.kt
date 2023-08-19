@@ -8,6 +8,29 @@ import java.util.Locale
 
 object Utils {
 
+    const val AD_STATUS_AVAILABLE = "AVAILABLE"
+    const val AD_STATUS_SOLD = "SOLD"
+
+    val categories = arrayOf(
+        "Mobiles",
+        "computer/Laptop",
+        "Electronics & Home Appliances",
+        "Vehicles",
+        "Furniture & Home Decor",
+        "Fashion & Beauty",
+        "Books",
+        "Sports",
+        "Animals",
+        "Businesses",
+        "Agriculture"
+    )
+
+    val conditions = arrayOf(
+        "New",
+        "Used",
+        "Refurbished"
+    )
+
     fun getTimeStamp() : Long{
         return System.currentTimeMillis()
     }
