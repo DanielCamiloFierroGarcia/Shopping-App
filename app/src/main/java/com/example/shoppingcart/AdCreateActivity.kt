@@ -67,6 +67,30 @@ class AdCreateActivity : AppCompatActivity() {
         binding.postAdBtn.setOnClickListener {
             validateData()
         }
+        //click to launch Location... activity to pick location from map
+        binding.locationAct.setOnClickListener {
+            val intent = Intent(this, LocationPickerActivity::class.java)
+            locationPickerActivityResultLauncher.launch(intent)
+        }
+    }
+
+    private val locationPickerActivityResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()){result ->
+        Log.d(TAG, "locationPickerActivityResultLauncher: ")
+        //this will get the result from Location... activity
+        if(result.resultCode == Activity.RESULT_OK){
+            val data = result.data
+            if(data != null){
+                latitude = data.getDoubleExtra("latitude", 0.0)
+                longitude = data.getDoubleExtra("longitude", 0.0)
+                address = data.getStringExtra("address") ?: ""
+
+                binding.locationAct.setText(address)
+            }
+        }
+        else{
+            Log.d(TAG, "locationPickerActivityResultLauncher: cancelled")
+            Utils.toast(this, "Cancelled")
+        }
     }
 
     private fun loadImages() {
