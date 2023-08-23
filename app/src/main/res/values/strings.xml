@@ -5,6 +5,6 @@
     <string name="already_have_account_log_in">Already have account? <b>Log in</b></string>
     <string name="didnt_receive_otp_resend">Didnt receive OTP? <b>Resend</b></string>
     <string name="forgot_password_recover">Forgot Password? <b>Recover</b></string>
-
+    <string name="price_symbol">$</string>
     <string name="my_google_map_api_key">AIzaSyCHU78V_M5ZFTXagT6rvbMYJqXstaK5Fqc</string>
 </resources>
