@@ -70,6 +70,10 @@ class AdapterAd : RecyclerView.Adapter<AdapterAd.HolderAd>, Filterable{
         val formattedDate = Utils.formatTimestampDate(timestamp)
 
         loadAdFirstImage(modelAd, holder)
+        //if user is logged then check if the ad is in favs of current user
+        if(firebaseAuth.currentUser != null){
+            checkIsFavorite(modelAd, holder)
+        }
 
         holder.titleTv.text = title
         holder.descriptionTv.text = description
@@ -77,6 +81,38 @@ class AdapterAd : RecyclerView.Adapter<AdapterAd.HolderAd>, Filterable{
         holder.conditionTv.text = condition
         holder.priceTv.text = price
         holder.dateTv.text = formattedDate
+
+        holder.favBtn.setOnClickListener {
+            val favorite = modelAd.favorite
+            if(favorite){
+                Utils.removeFromFavorite(context, modelAd.id)
+            }
+            else{
+                Utils.addToFavorite(context, modelAd.id)
+            }
+        }
+    }
+
+    private fun checkIsFavorite(modelAd: ModelAd, holder: AdapterAd.HolderAd) {
+        val ref = FirebaseDatabase.getInstance().getReference("Users")
+        ref.child(firebaseAuth.uid!!).child("Favorites").child(modelAd.id)
+            .addValueEventListener(object : ValueEventListener{
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val favorite = snapshot.exists()
+                    modelAd.favorite = favorite
+
+                    if(favorite){
+                        holder.favBtn.setImageResource(R.drawable.ic_fav_yes)
+                    }
+                    else{
+                        holder.favBtn.setImageResource(R.drawable.ic_fav_no)
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+
+                }
+            })
     }
 
     private fun loadAdFirstImage(modelAd: ModelAd, holder: HolderAd) {

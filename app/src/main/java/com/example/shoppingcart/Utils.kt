@@ -3,6 +3,8 @@ package com.example.shoppingcart
 import android.content.Context
 import android.text.format.DateFormat
 import android.widget.Toast
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 import java.util.Calendar
 import java.util.Locale
 
@@ -62,5 +64,48 @@ object Utils {
         calendar.timeInMillis = timestamp
 
         return DateFormat.format("dd/MM/yyyy", calendar).toString()
+    }
+
+    fun addToFavorite(context: Context, adId: String){
+        val firebaseAuth = FirebaseAuth.getInstance()
+
+        if(firebaseAuth.currentUser == null){
+            toast(context, "You're not logged-in")
+        }
+        else{
+            val timestamp = getTimeStamp()
+
+            val hashMap = HashMap<String, Any>()
+            hashMap["adId"] = adId
+            hashMap["timestamp"] = timestamp
+
+            val ref = FirebaseDatabase.getInstance().getReference("Users")
+            ref.child(firebaseAuth.uid!!).child("Favorites").child(adId)
+                .setValue(hashMap)
+                .addOnSuccessListener {
+                    toast(context, "Added to favorites")
+                }
+                .addOnFailureListener {
+                    toast(context, "Failed to add to favorites")
+                }
+        }
+    }
+
+    fun removeFromFavorite(context: Context, adId: String){
+        val firebaseAuth = FirebaseAuth.getInstance()
+        if(firebaseAuth.currentUser == null){
+            toast(context, "You're not logged-in")
+        }
+        else{
+            val ref = FirebaseDatabase.getInstance().getReference("Users")
+            ref.child(firebaseAuth.uid!!).child("Favorites").child(adId)
+                .removeValue()
+                .addOnSuccessListener {
+                    toast(context, "Removed from favorites")
+                }
+                .addOnFailureListener {
+                    toast(context, "Failed to remove from favorites")
+                }
+        }
     }
 }
