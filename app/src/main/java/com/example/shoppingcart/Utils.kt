@@ -1,6 +1,8 @@
 package com.example.shoppingcart
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.text.format.DateFormat
 import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
@@ -106,6 +108,33 @@ object Utils {
                 .addOnFailureListener {
                     toast(context, "Failed to remove from favorites")
                 }
+        }
+    }
+
+    //Launch Call intent with phone number
+    fun callIntent(context: Context, phone: String){
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("tel:"+Uri.encode(phone)))
+        context.startActivity(intent)
+    }
+
+    //Launch SMS intent with phone number
+    fun smsIntent(context: Context, phone: String){
+        val intent = Intent(Intent.ACTION_VIEW, Uri.fromParts("sms", Uri.encode(phone), null))
+        context.startActivity(intent)
+    }
+
+    //Launch Google Map intent with phone number
+    fun mapIntent(context: Context, latitude: Double, longitude: Double){
+        val gmmIntentUri = Uri.parse("http://maps.google.com/maps?daddr=$latitude,$longitude")
+
+        val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
+        mapIntent.setPackage("com.google.android.apps.maps")
+
+        if(mapIntent.resolveActivity(context.packageManager) != null){
+            context.startActivity(mapIntent)
+        }
+        else{
+            toast(context, "Google Map not installed")
         }
     }
 }

@@ -4,8 +4,10 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import com.bumptech.glide.Glide
 import com.example.shoppingcart.R
 import com.example.shoppingcart.Utils
+import com.example.shoppingcart.adapters.AdapterImageSlider
 import com.example.shoppingcart.databinding.ActivityAdDetailsBinding
 import com.example.shoppingcart.models.ModelAd
 import com.example.shoppingcart.models.ModelImageSlider
@@ -53,7 +55,62 @@ class AdDetailsActivity : AppCompatActivity() {
         adId = intent.getStringExtra("adId").toString()
 
         if(firebaseAuth.currentUser != null){
-            showMarkAsSoldDialog()
+            checkIsFavorite()
+        }
+
+        loadAdDetails()
+        loadAdImages()
+
+        binding.toolbarBackBtn.setOnClickListener {
+            onBackPressed()
+        }
+
+        binding.toolbarDeleteBtn.setOnClickListener {
+            val materialAlertDialogBuilder = MaterialAlertDialogBuilder(this)
+            materialAlertDialogBuilder.setTitle("Delete Ad")
+                .setMessage("Are you sure you want to delete this ad?")
+                .setPositiveButton("DELETE"){dialog, which->
+                    Log.d(TAG, "onCreate: Delete clicked")
+                    deleteAd()
+                }
+                .setNegativeButton("CANCEL"){dialog, which->
+                    Log.d(TAG, "onCreate: Cancel clicked")
+                    dialog.dismiss()
+                }.show()
+        }
+
+        binding.toolbarEditBtn.setOnClickListener {
+
+        }
+
+        binding.toolbarFavBtn.setOnClickListener {
+            //if fav remove from favs and if not fav add to favs
+            if(favorite){
+                Utils.removeFromFavorite(this, adId)
+            }
+            else{
+                Utils.addToFavorite(this, adId)
+            }
+        }
+
+        binding.sellerProfileCv.setOnClickListener {
+
+        }
+
+        binding.chatBtn.setOnClickListener {
+
+        }
+
+        binding.callBtn.setOnClickListener {
+            Utils.callIntent(this, sellerPhone)
+        }
+
+        binding.smsBtn.setOnClickListener {
+            Utils.smsIntent(this, sellerPhone)
+        }
+
+        binding.mapBtn.setOnClickListener {
+            Utils.mapIntent(this, adLatitude, adLongitude)
         }
     }
 
@@ -99,6 +156,7 @@ class AdDetailsActivity : AppCompatActivity() {
                         val description = modelAd.description
                         val address = modelAd.address
                         val condition = modelAd.condition
+                        val category = modelAd.category
                         val price = modelAd.price
                         adLatitude = modelAd.latitude
                         adLongitude = modelAd.longitude
@@ -124,6 +182,7 @@ class AdDetailsActivity : AppCompatActivity() {
                         binding.addressTv.text = address
                         binding.coditionTv.text = condition
                         binding.priceTv.text = price
+                        binding.categoryTv.text = category
                         binding.dateTv.text = formattedDate
 
                         loadSellerDetails()
@@ -138,7 +197,109 @@ class AdDetailsActivity : AppCompatActivity() {
             })
     }
 
-    private fun loadSellerDetails() {//LEFT AT 57:28
+    private fun loadSellerDetails() {
+        Log.d(TAG, "loadSellerDetails: ")
+        //Db path to seller info
+        val ref =  FirebaseDatabase.getInstance().getReference("Users")
+        ref.child(sellerUid)
+            .addValueEventListener(object : ValueEventListener{
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val name = "${snapshot.child("name").value}"
+                    val phoneCode = "${snapshot.child("phoneCode").value}"
+                    val phoneNumber = "${snapshot.child("phoneNumber").value}"
+                    val profileImageUrl = "${snapshot.child("profileImageUrl").value}"
+                    val timestamp = snapshot.child("timestamp").value as Long
 
+                    val formattedDate = Utils.formatTimestampDate(timestamp)
+
+                    sellerPhone = "$phoneCode$phoneNumber"
+
+                    binding.sellerNameTV.text = name
+                    binding.memberSinceTv.text = formattedDate
+
+                    try{
+                        Glide.with(this@AdDetailsActivity)
+                            .load(profileImageUrl)
+                            .placeholder(R.drawable.ic_person_white)
+                            .into(binding.sellerProfileIv)
+                    }catch (e: Exception){
+                        Log.e(TAG, "onDataChange: ", e)
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+
+                }
+            })
+    }
+
+    private fun checkIsFavorite(){
+        Log.d(TAG, "checkIsFavorite: ")
+        //DB path to ckeck if ad is in favorite of current user
+        val ref = FirebaseDatabase.getInstance().getReference("Users")
+        ref.child("${firebaseAuth.uid}").child("Favorites").child(adId)
+            .addValueEventListener(object : ValueEventListener{
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    favorite = snapshot.exists()
+
+                    if(favorite){
+                        binding.toolbarFavBtn.setImageResource(R.drawable.ic_fav_yes)
+                    }
+                    else{
+                        binding.toolbarFavBtn.setImageResource(R.drawable.ic_fav_no)
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+
+                }
+            })
+    }
+
+    private fun loadAdImages(){
+        Log.d(TAG, "loadAdImages: ")
+
+        imageSliderArray = ArrayList()
+
+        val ref = FirebaseDatabase.getInstance().getReference("Ads")
+        ref.child(adId).child("Images")
+            .addValueEventListener(object : ValueEventListener{
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    imageSliderArray.clear()
+                    for(ds in snapshot.children){
+
+                        try{
+                            val modelImagesSlider = ds.getValue(ModelImageSlider::class.java)
+                            imageSliderArray.add(modelImagesSlider!!)
+                        }catch (e: Exception){
+                            Log.e(TAG, "onDataChange: ", e)
+                        }
+
+                        val adapterImageSlider = AdapterImageSlider(this@AdDetailsActivity, imageSliderArray)
+                        binding.imageSliderVp.adapter = adapterImageSlider
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+
+                }
+            })
+    }
+
+    private fun deleteAd(){
+        Log.d(TAG, "deleteAd: ")
+
+        val ref = FirebaseDatabase.getInstance().getReference("Ads")
+        ref.child(adId)
+            .removeValue()
+            .addOnSuccessListener {
+                Log.d(TAG, "deleteAd: Deleted")
+                Utils.toast(this, "Deleted")
+                finish()
+            }
+            .addOnFailureListener {
+                Log.e(TAG, "deleteAd: ", it)
+                Utils.toast(this, "Failed to delete")
+            }
     }
 }
