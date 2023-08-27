@@ -1,4 +1,4 @@
-package com.example.shoppingcart
+package com.example.shoppingcart.fragments
 
 import android.app.ProgressDialog
 import android.content.Context
@@ -10,6 +10,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.bumptech.glide.Glide
+import com.example.shoppingcart.activities.ChangePasswordActivity
+import com.example.shoppingcart.activities.DeleteAccountActivity
+import com.example.shoppingcart.activities.MainActivity
+import com.example.shoppingcart.activities.ProfileEditActivity
+import com.example.shoppingcart.R
+import com.example.shoppingcart.Utils
 import com.example.shoppingcart.databinding.FragmentAccountBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot

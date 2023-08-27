@@ -1,10 +1,11 @@
-package com.example.shoppingcart
+package com.example.shoppingcart.activities
 
 import android.app.ProgressDialog
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import com.example.shoppingcart.Utils
 import com.example.shoppingcart.databinding.ActivityDeleteAccountBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -81,7 +82,10 @@ class DeleteAccountActivity : AppCompatActivity() {
                                 .addOnFailureListener {
                                     Log.d(TAG, "onDataChange: ", it)
                                     progressDialog.dismiss()
-                                    Utils.toast(this@DeleteAccountActivity, "Failed to delete user due to ${it.message}")
+                                    Utils.toast(
+                                        this@DeleteAccountActivity,
+                                        "Failed to delete user due to ${it.message}"
+                                    )
                                     startMainActivity()
                                 }
                         }

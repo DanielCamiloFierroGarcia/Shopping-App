@@ -1,6 +1,8 @@
 package com.example.shoppingcart
 
 import android.widget.Filter
+import com.example.shoppingcart.adapters.AdapterAd
+import com.example.shoppingcart.models.ModelAd
 import java.util.Locale
 
 class FilterAd(

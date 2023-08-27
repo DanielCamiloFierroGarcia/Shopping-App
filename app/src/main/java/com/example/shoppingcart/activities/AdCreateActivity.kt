@@ -1,4 +1,4 @@
-package com.example.shoppingcart
+package com.example.shoppingcart.activities
 
 import android.Manifest
 import android.app.Activity
@@ -15,7 +15,11 @@ import android.view.Menu
 import android.widget.ArrayAdapter
 import android.widget.PopupMenu
 import androidx.activity.result.contract.ActivityResultContracts
+import com.example.shoppingcart.R
+import com.example.shoppingcart.Utils
+import com.example.shoppingcart.adapters.AdapterImagePicked
 import com.example.shoppingcart.databinding.ActivityAdCreateBinding
+import com.example.shoppingcart.models.ModelImagePicked
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage

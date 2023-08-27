@@ -1,4 +1,4 @@
-package com.example.shoppingcart
+package com.example.shoppingcart.models
 
 import android.net.Uri
 

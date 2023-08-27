@@ -1,4 +1,4 @@
-package com.example.shoppingcart
+package com.example.shoppingcart.fragments
 
 import android.content.Context
 import android.os.Bundle
@@ -9,8 +9,9 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.widget.addTextChangedListener
+import com.example.shoppingcart.adapters.AdapterAd
 import com.example.shoppingcart.databinding.FragmentMyAdsAdsBinding
+import com.example.shoppingcart.models.ModelAd
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError

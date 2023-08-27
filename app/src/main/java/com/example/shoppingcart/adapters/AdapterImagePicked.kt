@@ -1,4 +1,4 @@
-package com.example.shoppingcart
+package com.example.shoppingcart.adapters
 
 import android.content.Context
 import android.util.Log
@@ -8,7 +8,9 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView.Adapter
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.bumptech.glide.Glide
+import com.example.shoppingcart.R
 import com.example.shoppingcart.databinding.RowImagePickedBinding
+import com.example.shoppingcart.models.ModelImagePicked
 
 class AdapterImagePicked(private val context: Context, private val imagePickedArrayList: ArrayList<ModelImagePicked>) : Adapter<AdapterImagePicked.HolderImagePicked>(){
 

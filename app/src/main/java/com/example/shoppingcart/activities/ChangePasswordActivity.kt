@@ -1,9 +1,10 @@
-package com.example.shoppingcart
+package com.example.shoppingcart.activities
 
 import android.app.ProgressDialog
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import com.example.shoppingcart.Utils
 import com.example.shoppingcart.databinding.ActivityChangePasswordBinding
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth

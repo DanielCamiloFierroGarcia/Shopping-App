@@ -1,4 +1,4 @@
-package com.example.shoppingcart
+package com.example.shoppingcart.activities
 
 import android.app.Activity
 import android.app.ProgressDialog
@@ -14,6 +14,8 @@ import android.view.Menu
 import android.widget.PopupMenu
 import androidx.activity.result.contract.ActivityResultContracts
 import com.bumptech.glide.Glide
+import com.example.shoppingcart.R
+import com.example.shoppingcart.Utils
 import com.example.shoppingcart.databinding.ActivityProfileEditBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot

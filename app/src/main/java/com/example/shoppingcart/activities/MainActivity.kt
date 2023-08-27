@@ -1,9 +1,15 @@
-package com.example.shoppingcart
+package com.example.shoppingcart.activities
 
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import com.example.shoppingcart.fragments.MyAdsFragment
+import com.example.shoppingcart.R
+import com.example.shoppingcart.Utils
 import com.example.shoppingcart.databinding.ActivityMainBinding
+import com.example.shoppingcart.fragments.AccountFragment
+import com.example.shoppingcart.fragments.ChatsFragment
+import com.example.shoppingcart.fragments.HomeFragment
 import com.google.firebase.auth.FirebaseAuth
 
 class MainActivity : AppCompatActivity() {

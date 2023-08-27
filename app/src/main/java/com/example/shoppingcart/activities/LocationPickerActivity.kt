@@ -1,4 +1,4 @@
-package com.example.shoppingcart
+package com.example.shoppingcart.activities
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -14,6 +14,8 @@ import android.util.Log
 import android.view.View
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import com.example.shoppingcart.R
+import com.example.shoppingcart.Utils
 import com.example.shoppingcart.databinding.ActivityLocationPickerBinding
 import com.google.android.gms.common.api.Status
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -22,7 +24,6 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions

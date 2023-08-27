@@ -1,4 +1,4 @@
-package com.example.shoppingcart
+package com.example.shoppingcart.fragments
 
 import android.app.Activity
 import android.content.Context
@@ -15,8 +15,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.widget.addTextChangedListener
+import com.example.shoppingcart.activities.LocationPickerActivity
+import com.example.shoppingcart.RvListenerCategory
+import com.example.shoppingcart.Utils
+import com.example.shoppingcart.adapters.AdapterAd
+import com.example.shoppingcart.adapters.AdapterCategory
 import com.example.shoppingcart.databinding.FragmentHomeBinding
+import com.example.shoppingcart.models.ModelAd
+import com.example.shoppingcart.models.ModelCategory
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -202,7 +208,8 @@ class HomeFragment : Fragment() {
             categoryArrayList.add(modelCategory)
         }
         //iinit/setup ApaterCategory
-        val adapterCategory = AdapterCategory(mContext, categoryArrayList, object : RvListenerCategory{
+        val adapterCategory = AdapterCategory(mContext, categoryArrayList, object :
+            RvListenerCategory {
             override fun onCategoryClick(modelCategory: ModelCategory) {
                 //get selected cat
                 val selectedCategory = modelCategory.category

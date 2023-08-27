@@ -1,4 +1,4 @@
-package com.example.shoppingcart
+package com.example.shoppingcart.activities
 
 import android.app.ProgressDialog
 import android.content.Intent
@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import com.example.shoppingcart.Utils
 import com.example.shoppingcart.databinding.ActivityLoginPhoneBinding
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth

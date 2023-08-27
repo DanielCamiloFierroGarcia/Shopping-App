@@ -1,6 +1,7 @@
-package com.example.shoppingcart
+package com.example.shoppingcart.adapters
 
 import android.content.Context
+import android.content.Intent
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -9,7 +10,12 @@ import android.widget.Filter
 import android.widget.Filterable
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.example.shoppingcart.FilterAd
+import com.example.shoppingcart.R
+import com.example.shoppingcart.Utils
+import com.example.shoppingcart.activities.AdDetailsActivity
 import com.example.shoppingcart.databinding.RowAdBinding
+import com.example.shoppingcart.models.ModelAd
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -82,6 +88,12 @@ class AdapterAd : RecyclerView.Adapter<AdapterAd.HolderAd>, Filterable{
         holder.priceTv.text = price
         holder.dateTv.text = formattedDate
 
+        holder.itemView.setOnClickListener {
+            val intent = Intent(context, AdDetailsActivity::class.java)
+            intent.putExtra("adId", modelAd.id)
+            context.startActivity(intent)
+        }
+
         holder.favBtn.setOnClickListener {
             val favorite = modelAd.favorite
             if(favorite){
@@ -93,7 +105,7 @@ class AdapterAd : RecyclerView.Adapter<AdapterAd.HolderAd>, Filterable{
         }
     }
 
-    private fun checkIsFavorite(modelAd: ModelAd, holder: AdapterAd.HolderAd) {
+    private fun checkIsFavorite(modelAd: ModelAd, holder: HolderAd) {
         val ref = FirebaseDatabase.getInstance().getReference("Users")
         ref.child(firebaseAuth.uid!!).child("Favorites").child(modelAd.id)
             .addValueEventListener(object : ValueEventListener{
