@@ -1,9 +1,12 @@
 package com.example.shoppingcart.activities
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
 import android.view.View
+import androidx.appcompat.widget.PopupMenu
 import com.bumptech.glide.Glide
 import com.example.shoppingcart.R
 import com.example.shoppingcart.Utils
@@ -80,7 +83,7 @@ class AdDetailsActivity : AppCompatActivity() {
         }
 
         binding.toolbarEditBtn.setOnClickListener {
-
+            editOptionsDialog()
         }
 
         binding.toolbarFavBtn.setOnClickListener {
@@ -111,6 +114,29 @@ class AdDetailsActivity : AppCompatActivity() {
 
         binding.mapBtn.setOnClickListener {
             Utils.mapIntent(this, adLatitude, adLongitude)
+        }
+    }
+
+    private fun editOptionsDialog() {
+        Log.d(TAG, "editOptionsDialog: ")
+        val popupMenu = PopupMenu(this, binding.toolbarEditBtn)
+        popupMenu.menu.add(Menu.NONE, 0, 0, "Edit")
+        popupMenu.menu.add(Menu.NONE, 1, 1, "Mark As Sold")
+
+        popupMenu.show()
+        popupMenu.setOnMenuItemClickListener { menuItem ->
+            val itemId = menuItem.itemId
+
+            if(itemId == 0){
+                val intent = Intent(this, AdCreateActivity::class.java)
+                intent.putExtra("isEditMode", true)
+                intent.putExtra("adId", adId)
+                startActivity(intent)
+            }
+            else if(itemId == 1){
+                showMarkAsSoldDialog()
+            }
+            return@setOnMenuItemClickListener true
         }
     }
 

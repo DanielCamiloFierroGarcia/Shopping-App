@@ -113,13 +113,13 @@ object Utils {
 
     //Launch Call intent with phone number
     fun callIntent(context: Context, phone: String){
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("tel:"+Uri.encode(phone)))
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("tel:${Uri.encode(phone)}"))
         context.startActivity(intent)
     }
 
     //Launch SMS intent with phone number
     fun smsIntent(context: Context, phone: String){
-        val intent = Intent(Intent.ACTION_VIEW, Uri.fromParts("sms", Uri.encode(phone), null))
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("sms:${Uri.encode(phone)}"))
         context.startActivity(intent)
     }
 

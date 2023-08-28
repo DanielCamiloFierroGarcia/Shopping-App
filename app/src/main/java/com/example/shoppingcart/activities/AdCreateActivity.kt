@@ -5,6 +5,7 @@ import android.app.Activity
 import android.app.ProgressDialog
 import android.content.ContentValues
 import android.content.Intent
+import android.graphics.ColorSpace.Model
 import android.net.Uri
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
@@ -21,7 +22,10 @@ import com.example.shoppingcart.adapters.AdapterImagePicked
 import com.example.shoppingcart.databinding.ActivityAdCreateBinding
 import com.example.shoppingcart.models.ModelImagePicked
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
 
 class AdCreateActivity : AppCompatActivity() {
@@ -40,6 +44,10 @@ class AdCreateActivity : AppCompatActivity() {
     private lateinit var imagePickedArrayList: ArrayList<ModelImagePicked>
 
     private lateinit var adapterImagePicked: AdapterImagePicked
+
+    private var isEditMode = false
+    private var adIdForEditing = ""
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAdCreateBinding.inflate(layoutInflater)
@@ -56,6 +64,19 @@ class AdCreateActivity : AppCompatActivity() {
 
         val adapterConditions = ArrayAdapter(this, R.layout.row_condition_act, Utils.conditions)
         binding.conditionAct.setAdapter(adapterConditions)
+
+        isEditMode = intent.getBooleanExtra("isEditMode", false)
+
+        if(isEditMode){
+            adIdForEditing = intent.getStringExtra("adId") ?: ""
+            loadAdDetails()
+            binding.toolbarTitleTv.text = "Update Ad"
+            binding.postAdBtn.text = "Update Ad"
+        }
+        else{
+            binding.toolbarTitleTv.text = "Create Ad"
+            binding.postAdBtn.text = "Post Ad"
+        }
 
         imagePickedArrayList = ArrayList()
         loadImages()
@@ -100,7 +121,7 @@ class AdCreateActivity : AppCompatActivity() {
     private fun loadImages() {
         Log.d(TAG, "loadImages: ")
 
-        adapterImagePicked = AdapterImagePicked(this, imagePickedArrayList)
+        adapterImagePicked = AdapterImagePicked(this, imagePickedArrayList, adIdForEditing)
 
         binding.imagesRv.adapter = adapterImagePicked
     }
@@ -262,8 +283,47 @@ class AdCreateActivity : AppCompatActivity() {
             binding.descriptionEt.requestFocus()
         }
         else{
-            postAd()
+            //all data is validated we can proceed further now
+            if(isEditMode){
+                updateAd()
+            }
+            else{
+                postAd()
+            }
         }
+    }
+
+    private fun updateAd() {
+        Log.d(TAG, "updateAd: ")
+
+        progressDialog.setMessage("Updating Ad")
+        progressDialog.show()
+
+        val hashMap = HashMap<String, Any>()
+        hashMap["brand"] = "$brand"
+        hashMap["category"] = "$category"
+        hashMap["condition"] = "$condition"
+        hashMap["address"] = "$address"
+        hashMap["price"] = "$price"
+        hashMap["title"] = "$title"
+        hashMap["description"] = "$description"
+        hashMap["latitude"] = latitude
+        hashMap["longitude"] = longitude
+
+        val ref = FirebaseDatabase.getInstance().getReference("Ads")
+        ref.child(adIdForEditing)
+            .updateChildren(hashMap)
+            .addOnSuccessListener {
+                Log.d(TAG, "updateAd: Ad updated")
+                //start uploading images picked for ad
+                uploadImagesStorage(adIdForEditing)
+                progressDialog.dismiss()
+            }
+            .addOnFailureListener {
+                Log.d(TAG, "updateAd: ", it)
+                progressDialog.dismiss()
+                Utils.toast(this, "Failed due to ${it.message}")
+            }
     }
 
     private fun postAd() {
@@ -309,40 +369,95 @@ class AdCreateActivity : AppCompatActivity() {
     private fun uploadImagesStorage(adId: String){
         for(i in imagePickedArrayList.indices){
             val modelImagePicked = imagePickedArrayList[i]
-            val imageName = modelImagePicked.id
-            val filePathAndName = "Ads/$imageName"
-            val imageIndexForProgress = i +1
-            val storageRef = FirebaseStorage.getInstance().getReference(filePathAndName)
-            storageRef.putFile(modelImagePicked.imageUri!!)
-                .addOnProgressListener {snapshot ->
-                    val progress = 100.0 * snapshot.bytesTransferred / snapshot.totalByteCount
-                    Log.d(TAG, "uploadImagesStorage: progress: $progress")
-                    val message = "Uploading $imageIndexForProgress of ${imagePickedArrayList.size} images.. Progress ${progress.toInt()}"
-                    progressDialog.setMessage(message)
-                    progressDialog.show()
-                }
-                .addOnSuccessListener {
-                    Log.d(TAG, "uploadImagesStorage: onSuccess")
-                    val uriTask = it.storage.downloadUrl
-                    while (!uriTask.isSuccessful);
-                    val uploadedImageUrl = uriTask.result
 
-                    if(uriTask.isSuccessful){
-                        val hashMap = HashMap<String, Any>()
-                        hashMap["id"] = "${modelImagePicked.imageUri}"
-                        hashMap["imageUrl"] = "$uploadedImageUrl"
-                        //add in FB db. Ads > AdId > Images > ImageId > ImageData
-                        val ref = FirebaseDatabase.getInstance().getReference("Ads")
-                        ref.child(adId).child("Images")
-                            .child(imageName)
-                            .updateChildren(hashMap)
+            //upload image only if picked from gallery/camera
+            if(!modelImagePicked.fromInternet){
+                val imageName = modelImagePicked.id
+                val filePathAndName = "Ads/$imageName"
+                val imageIndexForProgress = i +1
+                val storageRef = FirebaseStorage.getInstance().getReference(filePathAndName)
+                storageRef.putFile(modelImagePicked.imageUri!!)
+                    .addOnProgressListener {snapshot ->
+                        val progress = 100.0 * snapshot.bytesTransferred / snapshot.totalByteCount
+                        Log.d(TAG, "uploadImagesStorage: progress: $progress")
+                        val message = "Uploading $imageIndexForProgress of ${imagePickedArrayList.size} images.. Progress ${progress.toInt()}"
+                        progressDialog.setMessage(message)
+                        progressDialog.show()
                     }
-                    progressDialog.dismiss()
-                }
-                .addOnFailureListener{
-                    Log.d(TAG, "uploadImagesStorage: ", it)
-                    progressDialog.dismiss()
-                }
+                    .addOnSuccessListener {
+                        Log.d(TAG, "uploadImagesStorage: onSuccess")
+                        val uriTask = it.storage.downloadUrl
+                        while (!uriTask.isSuccessful);
+                        val uploadedImageUrl = uriTask.result
+
+                        if(uriTask.isSuccessful){
+                            val hashMap = HashMap<String, Any>()
+                            hashMap["id"] = "${modelImagePicked.id}"
+                            hashMap["imageUrl"] = "$uploadedImageUrl"
+                            //add in FB db. Ads > AdId > Images > ImageId > ImageData
+                            val ref = FirebaseDatabase.getInstance().getReference("Ads")
+                            ref.child(adId).child("Images")
+                                .child(imageName)
+                                .updateChildren(hashMap)
+                        }
+                        progressDialog.dismiss()
+                    }
+                    .addOnFailureListener{
+                        Log.d(TAG, "uploadImagesStorage: ", it)
+                        progressDialog.dismiss()
+                    }
+            }
         }
+    }
+
+    private fun loadAdDetails() {
+        Log.d(TAG, "loadAdDetails: ")
+
+        val ref = FirebaseDatabase.getInstance().getReference("Ads")
+        ref.child(adIdForEditing)
+            .addListenerForSingleValueEvent(object : ValueEventListener{
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val brand = "${snapshot.child("brand").value}"
+                    val category = "${snapshot.child("category").value}"
+                    val condition = "${snapshot.child("condition").value}"
+                    latitude = (snapshot.child("latitude").value as Double) ?: 0.0
+                    longitude = (snapshot.child("longitude").value as Double)?: 0.0
+                    address = "${snapshot.child("address").value}"
+                    val price = "${snapshot.child("price").value}"
+                    val title = "${snapshot.child("title").value}"
+                    val description = "${snapshot.child("description").value}"
+
+                    binding.brandEt.setText(brand)
+                    binding.categoryAct.setText(category)
+                    binding.conditionAct.setText(condition)
+                    binding.locationAct.setText(address)
+                    binding.priceEt.setText(price)
+                    binding.titleEt.setText(title)
+                    binding.descriptionEt.setText(description)
+
+                    //load the ad images Ads > AdId > images
+                    val refImages = snapshot.child("Images").ref
+                    refImages.addListenerForSingleValueEvent(object : ValueEventListener{
+                        override fun onDataChange(snapshot: DataSnapshot) {
+                            for (ds in snapshot.children){
+                                val id = "${ds.child("id").value}"
+                                val imageUrl = "${ds.child("imageUrl").value}"
+
+                                val modelImagePicked = ModelImagePicked(id, null, imageUrl, true)
+                                imagePickedArrayList.add(modelImagePicked)
+                            }
+                            loadImages()
+                        }
+
+                        override fun onCancelled(error: DatabaseError) {
+
+                        }
+                    })
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+
+                }
+            })
     }
 }
