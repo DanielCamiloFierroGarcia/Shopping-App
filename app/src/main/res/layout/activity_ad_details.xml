@@ -187,7 +187,7 @@
                 android:text="Lorem ipsum dolor sit amet conoseno adistpe elit. A ad, iaque?"/>
 
             <TextView
-                android:id="@+id/receiptProfileLabelTv"
+                android:id="@+id/sellerProfileLabelTv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 style="@style/TextAppearance.MaterialComponents.Headline6"
@@ -199,7 +199,7 @@
                 android:id="@+id/sellerProfileCv"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/receiptProfileLabelTv"
+                android:layout_below="@id/sellerProfileLabelTv"
                 app:cardCornerRadius="10dp"
                 app:cardUseCompatPadding="true"
                 app:contentPadding="10dp">

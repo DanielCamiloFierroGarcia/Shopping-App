@@ -97,7 +97,9 @@ class AdDetailsActivity : AppCompatActivity() {
         }
 
         binding.sellerProfileCv.setOnClickListener {
-
+            val intent = Intent(this, AdSellerProfileActivity::class.java)
+            intent.putExtra("sellerUid", sellerUid)
+            startActivity(intent)
         }
 
         binding.chatBtn.setOnClickListener {
@@ -196,11 +198,17 @@ class AdDetailsActivity : AppCompatActivity() {
                             //1) should be able to edit and delete ad
                             binding.toolbarEditBtn.visibility = View.VISIBLE
                             binding.toolbarDeleteBtn.visibility = View.VISIBLE
+
+                            binding.sellerProfileCv.visibility = View.GONE
+                            binding.sellerProfileLabelTv.visibility = View.GONE
                         }
                         else{
                             binding.chatBtn.visibility = View.VISIBLE
                             binding.callBtn.visibility = View.VISIBLE
                             binding.smsBtn.visibility = View.VISIBLE
+
+                            binding.sellerProfileCv.visibility = View.VISIBLE
+                            binding.sellerProfileLabelTv.visibility = View.VISIBLE
                         }
 
                         binding.titleTv.text = title
