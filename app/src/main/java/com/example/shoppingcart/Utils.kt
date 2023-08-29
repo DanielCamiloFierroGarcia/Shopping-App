@@ -7,6 +7,7 @@ import android.text.format.DateFormat
 import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
+import java.util.Arrays
 import java.util.Calendar
 import java.util.Locale
 
@@ -136,5 +137,22 @@ object Utils {
         else{
             toast(context, "Google Map not installed")
         }
+    }
+
+    /**
+     * Generate Chat Path
+     * THis will generate chat path by sorting these UIDs and concatenate sorted array of UIDs having _ in between
+     * All messages of these 2 users will be saved in this path
+     *
+     * @param receiptUid The UID of the receipt
+     * @param uourUid The UID of current logged user**/
+    fun chatPath(receiptUid: String, yourUid: String): String{
+        //Array of UIDs
+        val arrayUids = arrayOf(receiptUid, yourUid)
+        //Sort Array
+        Arrays.sort(arrayUids)
+        //Concatenate both UIDs (after sorting) having _ between
+        //return chat path eg if id1 = 1234 and id2 = 5678 path will be 1234_5678
+        return "${arrayUids[0]}_${arrayUids[1]}"
     }
 }
