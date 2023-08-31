@@ -13,6 +13,9 @@ import java.util.Locale
 
 object Utils {
 
+    const val MESSAGE_TYPE_TEXT = "TEXT"
+    const val MESSAGE_TYPE_IMAGE = "IMAGE"
+
     const val AD_STATUS_AVAILABLE = "AVAILABLE"
     const val AD_STATUS_SOLD = "SOLD"
 
@@ -67,6 +70,13 @@ object Utils {
         calendar.timeInMillis = timestamp
 
         return DateFormat.format("dd/MM/yyyy", calendar).toString()
+    }
+    //to format with time, for chats
+    fun formatTimestampDateTime(timestamp: Long): String{
+        val calendar = Calendar.getInstance(Locale.ENGLISH)
+        calendar.timeInMillis = timestamp
+
+        return DateFormat.format("dd/MM/yyyy hh:mm:a", calendar).toString()
     }
 
     fun addToFavorite(context: Context, adId: String){

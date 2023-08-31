@@ -358,6 +358,7 @@ class AdCreateActivity : AppCompatActivity() {
             .addOnSuccessListener {
                 Log.d(TAG, "postAd: Ad published")
                 uploadImagesStorage(keyId)
+                progressDialog.dismiss()
             }
             .addOnFailureListener {
                 Log.d(TAG, "postAd: ", it)
