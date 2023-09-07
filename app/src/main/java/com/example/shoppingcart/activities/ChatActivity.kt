@@ -188,7 +188,7 @@ class ChatActivity : AppCompatActivity() {
             pickImageCamera()
         }
         else{
-            Utils.toast(this, "All or some permissiones denied")
+            Utils.toast(this, "All or some permissions denied")
         }
     }
 
