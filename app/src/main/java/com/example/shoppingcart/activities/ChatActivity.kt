@@ -14,18 +14,23 @@ import android.util.Log
 import android.view.Menu
 import android.widget.PopupMenu
 import androidx.activity.result.contract.ActivityResultContracts
+import com.android.volley.toolbox.JsonObjectRequest
+import com.android.volley.toolbox.Volley
 import com.bumptech.glide.Glide
 import com.example.shoppingcart.R
 import com.example.shoppingcart.Utils
 import com.example.shoppingcart.adapters.AdapterChat
 import com.example.shoppingcart.databinding.ActivityChatBinding
 import com.example.shoppingcart.models.ModelChat
+import com.google.android.gms.common.api.Response
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.firestore.util.Listener
 import com.google.firebase.storage.FirebaseStorage
+import org.json.JSONObject
 import java.sql.Timestamp
 
 class ChatActivity : AppCompatActivity() {
@@ -41,8 +46,10 @@ class ChatActivity : AppCompatActivity() {
     private lateinit var firebaseAuth: FirebaseAuth
 
     private var receiptUid = ""
+    private var receiptFcmToken = ""
 
     private var myUid = ""
+    private var myName = ""
     //WIll generate using UIDs of current user and receipt
     private var chatPath = ""
     //Uri of image picked from camera/gallery
@@ -68,6 +75,7 @@ class ChatActivity : AppCompatActivity() {
 
         chatPath = Utils.chatPath(receiptUid, myUid)
 
+        loadMyInfo()
         loadReceiptDetails()
         loadMessages()
 
@@ -82,6 +90,22 @@ class ChatActivity : AppCompatActivity() {
         binding.sendFab.setOnClickListener {
             validateData()
         }
+    }
+
+    private fun loadMyInfo(){
+        Log.d(TAG, "loadMyInfo: ")
+
+        val ref = FirebaseDatabase.getInstance().getReference("Users")
+        ref.child("${firebaseAuth.uid}")
+            .addValueEventListener(object : ValueEventListener{
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    myName = "${snapshot.child("name").value}"
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+
+                }
+            })
     }
 
     private fun loadMessages() {
@@ -123,6 +147,7 @@ class ChatActivity : AppCompatActivity() {
                     try{
                         val name = "${snapshot.child("name").value}"
                         val profileImageUrl = "${snapshot.child("profileImageUrl").value}"
+                        receiptFcmToken = "${snapshot.child("fcmToken").value}"
 
                         binding.toolbarTitleTv.text = name
 
@@ -316,11 +341,73 @@ class ChatActivity : AppCompatActivity() {
                 progressDialog.dismiss()
                 //after sending message clear message from messageEt
                 binding.messageEt.setText("")
+
+                //if message type is text, pass the actual message to show as notification description/body. If message type is Image then pass "Sent an attachment"
+                if(messageType == Utils.MESSAGE_TYPE_TEXT){
+                    prepareNotification(message)
+                }
+                else{
+                    prepareNotification("Sent and attachment")
+                }
             }
             .addOnFailureListener {
                 progressDialog.dismiss()
                 Log.e(TAG, "sendMessage: ", it)
                 Utils.toast(this, "Failed to send message")
             }
+    }
+
+    private fun prepareNotification(message: String){
+        Log.d(TAG, "prepareNotification: ")
+        //prepare json what to send and where to send
+        val notificationJo = JSONObject()
+        val notificationDataJo = JSONObject()
+        val notificationNotificationJo = JSONObject()
+
+        try{
+            //extra/custom data
+            notificationDataJo.put("notificationType", "${Utils.NOTIFICATION_TYPE_NEW_MESSAGE}")
+            notificationDataJo.put("senderUid", "${firebaseAuth.uid}")
+            //title, description, sound
+            notificationNotificationJo.put("title", "$myName")//key "title" is reserved name in FCM API
+            notificationNotificationJo.put("body", "$message")//key "body" is reserved name in FCM API
+            notificationNotificationJo.put("sound", "default")//key "sound" is reserved name in FCM API
+            //combine all data in single JSON object
+            notificationJo.put("to", "$receiptFcmToken")//"to" is reserved name in FCM API
+            notificationJo.put("notification", notificationNotificationJo)//key "notification" is reserved name in FCM API
+            notificationJo.put("data", notificationDataJo)//key "data" is reserved name in FCM API
+        }catch (e: Exception){
+            Log.e(TAG, "prepareNotification: ", e)
+        }
+
+        sendFcmNotification(notificationJo)
+    }
+
+    private fun sendFcmNotification(notificationJo: JSONObject){
+        //prepare JSON Object request to enqueue
+        val jsonObjectRequest: JsonObjectRequest = object : JsonObjectRequest(
+            Method.POST,
+            "https://fcm.googleapis.com/fcm/send",
+            notificationJo,
+            com.android.volley.Response.Listener {
+                //Notification sent
+                Log.d(TAG, "sendFcmNotification: Notification sent $it")
+            },
+            com.android.volley.Response.ErrorListener {
+                //Notification failed to send
+                Log.e(TAG, "sendFcmNotification: Notification failed sent $it")
+            }
+        ){
+            override fun getHeaders(): MutableMap<String, String> {
+                //put required headers
+                val headers = HashMap<String, String>()
+                headers["Content-Type"] = "application/json"
+                headers["Authorization"] = "key=${Utils.FCN_SERVER_KEY}"
+
+                return headers
+            }
+        }
+        //enqueue the JSON Object Request
+        Volley.newRequestQueue(this).add(jsonObjectRequest)
     }
 }

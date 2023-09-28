@@ -19,6 +19,9 @@ object Utils {
     const val AD_STATUS_AVAILABLE = "AVAILABLE"
     const val AD_STATUS_SOLD = "SOLD"
 
+    const val NOTIFICATION_TYPE_NEW_MESSAGE = "NOTIFICATION_TYPE_NEW_MESSAGE"
+    const val FCN_SERVER_KEY = "AAAAwXu_vWE:APA91bFwZ5m-QyDiBKzMSZzu2c9hHOTWb4DJoNYF3xc3dRndWVTVet-OnnAjzF6e5AU8fOI-gRr6B2daEqhe-SFQP18MH6S4dLjC-TiuvRDT9l4Xh2NqeShZtodL3O2O6LWzapJrV6QP"
+
     //Ads categories icons array
     val categories = arrayOf(
         "All",
